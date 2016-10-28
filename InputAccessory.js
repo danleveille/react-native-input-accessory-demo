@@ -22,8 +22,9 @@ var InputAccessory = React.createClass({
 
   //For some reason, this gives warnings?
   componentWillMount () {
-    DeviceEventEmitter.addListener('keyboardWillShow', this.keyboardWillShow.bind(this))
-    DeviceEventEmitter.addListener('keyboardWillHide', this.keyboardWillHide.bind(this))
+    const Keyboard = require('Keyboard')
+    Keyboard.addListener('keyboardWillShow', this.keyboardWillShow.bind(this))
+    Keyboard.addListener('keyboardWillHide', this.keyboardWillHide.bind(this))
   },
 
   componentWillUnmount(){

@@ -23,12 +23,15 @@ var InputAccessory = React.createClass({
   //For some reason, this gives warnings?
   componentWillMount () {
     const Keyboard = require('Keyboard')
-    Keyboard.addListener('keyboardWillShow', this.keyboardWillShow.bind(this))
-    Keyboard.addListener('keyboardWillHide', this.keyboardWillHide.bind(this))
+    this.keyboardDidShowListener = Keyboard.addListener("keyboardWillShow", this.keyboardWillShow.bind(this));
+    this.keyboardDidHideListener = Keyboard.addListener("keyboardWillHide", this.keyboardWillHide.bind(this));
   },
 
   componentWillUnmount(){
     // console.log('componentWillUnmount');
+    // Removing event bindings on component unmount     
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
     let newSize = Dimensions.get('window').height
     this.setState({
       visibleHeight: newSize,

@@ -1,134 +1,128 @@
 'use strict';
 
-import React, {
-  View,
-  DeviceEventEmitter,
+import React, { Component } from 'react';
+import {
   Dimensions,
   TouchableOpacity,
   LayoutAnimation,
   StyleSheet,
-  Text
+  Keyboard,
+  View,
+  Text,
 } from 'react-native';
-const dismissKeyboard = require('dismissKeyboard');
-var INPUT_ACCESSORY_HEIGHT = 40;
 
-var InputAccessory = React.createClass({
-  getInitialState: function() {
-    return {
-      visibleHeight: Dimensions.get('window').height,
-      opacity:0
-    };
-  },
+// --------------------------------------------------
 
-  //For some reason, this gives warnings?
-  componentWillMount () {
-    const Keyboard = require('Keyboard')
-    this.keyboardDidShowListener = Keyboard.addListener("keyboardWillShow", this.keyboardWillShow.bind(this));
-    this.keyboardDidHideListener = Keyboard.addListener("keyboardWillHide", this.keyboardWillHide.bind(this));
-  },
+const SCREEN_SIZE = Dimensions.get('window');
+const INPUT_ACCESSORY_HEIGHT = 40;
 
-  componentWillUnmount(){
-    // console.log('componentWillUnmount');
-    // Removing event bindings on component unmount     
+// --------------------------------------------------
+
+export default class InputAccessory extends Component {
+  state = {
+    visibleHeight: SCREEN_SIZE.height,
+    opacity: 0,
+  }
+  // --------------------------------------------------
+  componentWillMount() {
+    this.keyboardDidShowListener = 
+      Keyboard.addListener('keyboardWillShow', this.keyboardWillShow.bind(this));
+    this.keyboardDidHideListener = 
+      Keyboard.addListener('keyboardWillHide', this.keyboardWillHide.bind(this));
+  }
+  componentWillUnmount() {
     this.keyboardDidShowListener.remove();
     this.keyboardDidHideListener.remove();
-    let newSize = Dimensions.get('window').height
+    const newSize = SCREEN_SIZE.height;
     this.setState({
       visibleHeight: newSize,
-      hideKA: true,
-      opacity: 0
-    })
-    // dismissKeyboardHandler();
-  },
-
-  keyboardWillShow (e) {
-    var newSize = e.endCoordinates.screenY - (INPUT_ACCESSORY_HEIGHT-1); //-1 so 1px is showing so it doesn't unmount
-    LayoutAnimation.configureNext({
-      duration:500,
-      create: {
-        type: LayoutAnimation.Types.linear,
-        property: LayoutAnimation.Properties.scaleXY
-      },
-      update: {
-        type: LayoutAnimation.Types.linear,
-        property: LayoutAnimation.Properties.scaleXY
-      },
+      opacity: 0,
     });
-    
-    this.setState({
-      visibleHeight: newSize,
-      hideKA: false,
-      opacity:1,
-    })
-  },
-
-  rotateDevice: function() {
-    return false;
-  },
-
-  keyboardWillHide (e) {
-    // console.log('keyboardWillHide');
-    let newSize = Dimensions.get('window').height
-    this.setState({
-      visibleHeight: Dimensions.get('window').height,
-      hideKA: true,
-      opacity:0,
-    })
-  },
-
-  dismissKeyboardHandler: function(){
-    LayoutAnimation.configureNext({
-      duration:100,
-      create: {
-        type: LayoutAnimation.Types.linear,
-      },
-      update: {
-        type: LayoutAnimation.Types.linear,
-      },
-    });
-
-    let newSize = Dimensions.get('window').height
-    this.setState({
-      visibleHeight: newSize,
-      hideKA: true,
-      opacity:0,
-    })
-    // console.log('dismissKeyboard',dismissKeyboard());
-    dismissKeyboard();
-  },
-
-  render: function(){
-      return (
-        <View style={[s.InputAccessory,{opacity:this.state.opacity,top:this.state.visibleHeight-1}]} onLayout={(e)=>this.rotateDevice(e)}>
-            <TouchableOpacity
-              onPress={() => this.dismissKeyboardHandler()}>
-              <Text style={[s.InputAccessoryButtonText]}>
-                Done
-              </Text>
-            </TouchableOpacity>
-        </View>
-      )
   }
-});
+  // --------------------------------------------------
+  keyboardWillShow(e) {
+    const newSize = e.endCoordinates.screenY - (INPUT_ACCESSORY_HEIGHT - 1);
+    LayoutAnimation.configureNext({
+      duration: 500,
+      create: {
+        type: LayoutAnimation.Types.linear,
+        property: LayoutAnimation.Properties.scaleXY,
+      },
+      update: {
+        type: LayoutAnimation.Types.linear,
+        property: LayoutAnimation.Properties.scaleXY,
+      },
+    }); 
+    this.setState({
+      visibleHeight: newSize,
+      opacity: 1,
+    });
+  }
+  keyboardWillHide() {
+    this.setState({
+      visibleHeight: SCREEN_SIZE.height,
+      opacity: 0,
+    });
+  }
+  dismissKeyboardHandler() {
+    LayoutAnimation.configureNext({
+      duration: 100,
+      create: {
+        type: LayoutAnimation.Types.linear,
+      },
+      update: {
+        type: LayoutAnimation.Types.linear,
+      },
+    });
+    this.setState({
+      visibleHeight: SCREEN_SIZE.height,
+      opacity: 0,
+    });
+    Keyboard.dismiss();
+  }
+  // --------------------------------------------------
+  render() {
+    return (
+      <View 
+        style={[
+          styles.InputAccessory,
+          { opacity: this.state.opacity, top: this.state.visibleHeight - 1 },
+        ]} 
+      >
+        <TouchableOpacity
+          style={{ backgroundColor: '#f000' }}
+          onPress={() => this.dismissKeyboardHandler()}
+        >
+          <Text style={[styles.InputAccessoryButtonText]}>
+            {'Đóng bàn phím'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+}
 
-var s = StyleSheet.create({
+// --------------------------------------------------
+
+const styles = StyleSheet.create({
   InputAccessory: {
-    alignItems:'flex-end',
-    backgroundColor:'#FFF',
-    height:INPUT_ACCESSORY_HEIGHT,
-    position:'absolute',
-    left:0,
-    right:0,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    height: INPUT_ACCESSORY_HEIGHT,
+    backgroundColor: '#fff',
   },
   InputAccessoryButtonText: {
-    fontSize: 17,
+    paddingHorizontal: 9,
+    paddingVertical: 12,
+    marginLeft: 12,
+    marginRight: 8,
     letterSpacing: 0.5,
+    fontSize: 16,
+    fontWeight: '400',
     color: '#316b6f',
-    backgroundColor:'transparent',
-    paddingHorizontal:9,
-    paddingVertical:9,
+    backgroundColor: 'transparent',
   },
 });
-
-
-module.exports = InputAccessory;
